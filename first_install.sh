@@ -15,7 +15,13 @@ sudo apt-get install chromium-browser -y
 #remmina
 sudo apt-get install remmina remmina-plugin-* -y
 
-#simple
+#fcitx输入法
+sudo apt install fcitx-config-gtk -y
+sudo apt install fcitx-pinyin fcitx-sunpinyin -y
+sudo apt-get remove fcitx-module-kimpanel
+
+#simplescreenrecorder
+sudo apt-get install simplescreenrecorder -y
 
 #git
 sudo apt install git
