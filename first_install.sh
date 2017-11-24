@@ -44,3 +44,6 @@ sudo apt-get install notepadqq
 
 #others
 sudo apt-get install links dstat htop vnstat vim nano w3m curl wget  simplescreenrecorder
+sudo add-apt-repository ppa:maarten-baert/simplescreenrecorder
+sudo apt-get update
+sudo apt-get install simplescreenrecorder
