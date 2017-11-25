@@ -47,3 +47,10 @@ sudo apt-get install links dstat htop vnstat vim nano w3m curl wget  simplescree
 sudo add-apt-repository ppa:maarten-baert/simplescreenrecorder
 sudo apt-get update
 sudo apt-get install simplescreenrecorder
+#install gfwlist2pac inn order to convert gfwlist.txt to gfwlist.pac
+#official site of gfwlist is https://github.com/gfwlist/gfwlist.git
+sudo pip install gfwlist2pac
+git clone https://github.com/gfwlist/gfwlist.git
+gfwlist2pac -i gfwlist/gfwlist.txt -f gfwlist.pac -p "SOCKS5 127.0.0.1:1080;"
+
+
