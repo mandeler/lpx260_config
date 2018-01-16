@@ -2,8 +2,9 @@
 # update system repo and uprade 
 sudo apt-get update && sudo apt-get upgrade -y
 # insall python-pip and shadowsocks then uprade ssserver in order to support aes-256-gcm
-sudo apt-get install python-pip -y
-sudo pip install --upgrade pip -y
+sudo apt-get install python-pip 
+sudo pip install --upgrade pip 
+sudo pip install setuptools
 sudo pip install shadowsocks
 sudo pip install --upgrade git+https://github.com/shadowsocks/shadowsocks.git@master
 # copy config files into /etc
@@ -15,3 +16,4 @@ sudo ufw allow 56243
 sudo ufw allow 5903
 sudo ufw allow
 sudo ufw enable
+ssserver -d start -c /etc/ssserver.json

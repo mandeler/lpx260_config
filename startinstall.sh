@@ -56,3 +56,4 @@ git clone https://github.com/gfwlist/gfwlist.git
 gfwlist2pac -i gfwlist/gfwlist.txt -f gfwlist.pac -p "SOCKS5 127.0.0.1:1080;"
 
 
+sudo add-apt-repository ppa:nm-l2tp/network-manager-l2tp
