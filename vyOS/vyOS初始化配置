@@ -1,0 +1,254 @@
+########vyOS初始化配置
+configure
+set interface ethernet eth0 address dhcp
+set interface ethernet eth0 description 'WAN'
+set interface ethernet eth1 address '192.168.3.1/24'
+set interface ethernet eth1 description 'LAN'
+#######Enable SSH for remote management
+set service ssh port '22'
+#######Config system login user
+set system login user <username> authentication plaintext-password <password>
+#######Config Source NAT for inside network
+set nat source rule 100 outbound-interface 'eth0'
+set nat source rule 100 source address '192.168.3.0/24'
+set nat source rule 100 translation address masquerade
+#######Configure DHCP Server
+set service dhcp-server disabled 'false'
+set service dhcp-server shared-network-name LAN subnet 192.168.3.0/24 default-    router '192.168.3.1'
+set service dhcp-server shared-network-name LAN subnet 192.168.3.0/24 dns-server '192.168.3.1'
+set service dhcp-server shared-network-name LAN subnet 192.168.3.0/24 domain-name 'local.net'
+set service dhcp-server shared-network-name LAN subnet 192.168.3.0/24 lease '86400'
+set service dhcp-server shared-network-name LAN subnet 192.168.3.0/24 start 192.168.3.51 stop '192.168.3.100'
+#######DNS Forwarder
+set service dns forwarding cache-size '0'
+set service dns forwarding listen-on 'eth1'
+set service dns forwarding name-server '8.8.8.8'
+set service dns forwarding name-server '8.8.4.4'
+#######Firewall Policies
+set firewall name OUTSIDE-IN default-action 'drop'
+set firewall name OUTSIDE-IN rule 10 action 'accept'
+set firewall name OUTSIDE-IN rule 10 state established 'enable'
+set firewall name OUTSIDE-IN rule 10 state related 'enable'
+
+set firewall name OUTSIDE-LOCAL default-action 'drop'
+set firewall name OUTSIDE-LOCAL rule 10 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 10 state established 'enable'
+set firewall name OUTSIDE-LOCAL rule 10 state related 'enable'
+set firewall name OUTSIDE-LOCAL rule 20 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 20 icmp type-name 'echo-request'
+set firewall name OUTSIDE-LOCAL rule 20 protocol 'icmp'
+set firewall name OUTSIDE-LOCAL rule 20 state new 'enable'
+set firewall name OUTSIDE-LOCAL rule 30 action 'drop'
+set firewall name OUTSIDE-LOCAL rule 30 destination port '5903'
+set firewall name OUTSIDE-LOCAL rule 30 protocol 'tcp'
+set firewall name OUTSIDE-LOCAL rule 30 recent count '4'
+set firewall name OUTSIDE-LOCAL rule 30 recent time '60'
+set firewall name OUTSIDE-LOCAL rule 30 state new 'enable'
+set firewall name OUTSIDE-LOCAL rule 31 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 31 destination port '5903'
+set firewall name OUTSIDE-LOCAL rule 31 protocol 'tcp'
+set firewall name OUTSIDE-LOCAL rule 31 state new 'enable'
+######Allpy firewall policies
+set interfaces ethernet eth0 firewall in name 'OUTSIDE-IN'
+set interfaces ethernet eth0 firewall local name 'OUTSIDE-LOCAL'
+
+######L2TP over IPsec
+set vpn ipsec ipsec-interfaces interface eth0
+set vpn ipsec nat-traversal enable
+set vpn ipsec nat-networks allowed-network 0.0.0.0/0
+
+set vpn l2tp remote-access outside-address <x.x.x.x>
+set vpn l2tp remote-access client-ip-pool start 192.168.255.1
+set vpn l2tp remote-access client-ip-pool stop 192.168.255.255
+ set vpn l2tp remote-access dns-servers server-1 8.8.8.8
+ set vpn l2tp remote-access dns-servers server-2 8.8.4.4
+set vpn l2tp remote-access ipsec-settings authentication mode pre-shared-secret
+set vpn l2tp remote-access ipsec-settings authentication pre-shared-secret Mandeler123
+set vpn l2tp remote-access authentication mode local
+set vpn l2tp remote-access authentication local-users username chan password Mandeler123
+
+set firewall name OUTSIDE-LOCAL rule 40 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 40 protocol 'esp'
+set firewall name OUTSIDE-LOCAL rule 41 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 41 destination port '500'
+set firewall name OUTSIDE-LOCAL rule 41 protocol 'udp'
+set firewall name OUTSIDE-LOCAL rule 42 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 42 destination port '4500'
+set firewall name OUTSIDE-LOCAL rule 42 protocol 'udp'
+set firewall name OUTSIDE-LOCAL rule 43 action 'accept'
+set firewall name OUTSIDE-LOCAL rule 43 destination port '1701'
+set firewall name OUTSIDE-LOCAL rule 43 ipsec 'match-ipsec'
+set firewall name OUTSIDE-LOCAL rule 43 protocol 'udp'
+
+set firewall policy name LAN_WAN default-action accept 
+
+set nat source rule 110 outbound-interface 'eth0'
+set nat source rule 110 source address '192.168.255.0/24'
+set nat source rule 110 translation address masquerade
+
+
+
+
+
+
+chan@vyos:~$ show configuration 
+firewall {
+    name INSIDE_OUT {
+        default-action accept
+        description LAN_WAN
+        enable-default-log
+        rule 10 {
+            action accept
+            destination {
+                address 0.0.0.0/0
+            }
+            protocol all
+            source {
+                address 192.168.100.0/24
+            }
+            state {
+                established enable
+                new enable
+                related enable
+            }
+        }
+    }
+    name OUTSIDE_IN {
+        default-action drop
+        rule 10 {
+            action accept
+            state {
+                established enable
+                related enable
+            }
+        }
+        rule 20 {
+            action accept
+            icmp {
+                type-name echo-request
+            }
+            protocol icmp
+            state {
+                new enable
+            }
+        }
+        rule 30 {
+            action accept
+            destination {
+                port 5903
+            }
+            protocol tcp
+            state {
+                new enable
+            }
+        }
+        rule 40 {
+            action accept
+            protocol esp
+        }
+        rule 41 {
+            action accept
+            destination {
+                port 500
+            }
+            protocol udp
+        }
+        rule 42 {
+            action accept
+            destination {
+                port 4500
+            }
+            protocol udp
+        }
+        rule 43 {
+            action accept
+            destination {
+                port 1701
+            }
+            protocol udp
+        }
+    }
+}
+interfaces {
+    ethernet eth0 {
+        address dhcp
+    }
+    loopback lo {
+    }
+}
+nat {
+    source {
+        rule 10 {
+            outbound-interface eth0
+            source {
+                address 192.168.100.0/24
+            }
+            translation {
+                address masquerade
+            }
+        }
+    }
+}
+service {
+    dns {
+        forwarding {
+            cache-size 0
+            listen-on eth0
+            name-server 8.8.8.8
+            name-server 4.4.4.4
+        }
+    }
+    ssh {
+        port 5903
+    }
+}
+system {
+    config-management {
+        commit-revisions 20
+    }
+    console {
+        device ttyS0 {
+            speed 9600
+        }
+    }
+    login {
+        user chan {
+            authentication {
+                encrypted-password ****************
+                plaintext-password ****************
+            }
+        }
+        user vyos {
+            authentication {
+                encrypted-password ****************
+                plaintext-password ****************
+            }
+            level admin
+        }
+    }
+    ntp {
+        server 0.pool.ntp.org {
+        }
+        server 1.pool.ntp.org {
+        }
+        server 2.pool.ntp.org {
+        }
+    }
+    package {
+        repository community {
+            components main
+            distribution helium
+            url http://packages.vyos.net/vyos
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level notice
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+}
