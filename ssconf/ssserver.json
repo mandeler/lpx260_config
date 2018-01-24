@@ -1,7 +1,7 @@
 {
     "server": "0.0.0.0",
     "port_password": {
-        "56243": "Sdscs123"
+        "port_listening": "password"
     },
     "timeout": 300,
     "method": "aes-256-cfb"
