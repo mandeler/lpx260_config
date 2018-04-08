@@ -40,10 +40,13 @@ rm -rf /tmp/ttf-wps-fonts
 sudo apt-get install qemu-system qemu-utils libvirt-bin virt-manager -y
 
 # notepadqq the linux alt for note++
-sudo add-apt-repository ppa:notepadqq-team/notepadqq
-sudo apt-get update
-sudo apt-get install notepadqq
-
+#sudo add-apt-repository ppa:notepadqq-team/notepadqq
+#sudo apt-get update
+#sudo apt-get install notepadqq
+# Install NixNote(Evernote)
+sudo add-apt-repository ppa:nixnote/nixnote2-daily
+sudo apt update
+sudo apt install nixnote2
 # sublime-text
 sudo apt install sublime-text -y
 
@@ -54,7 +57,10 @@ sudo apt-get install links dstat htop vnstat vim nano w3m curl wget -y
 sudo pip install gfwlist2pac
 git clone https://github.com/gfwlist/gfwlist.git
 gfwlist2pac -i gfwlist/gfwlist.txt -f gfwlist.pac -p "SOCKS5 127.0.0.1:1080;"
-
+# Install Fingerprint 
+sudo add-apt-repository ppa:fingerprint/fingerprint-gui
+sudo apt-get update
+sudo apt-get install libbsapi policykit-1-fingerprint-gui fingerprint-gui
 
 sudo add-apt-repository ppa:nm-l2tp/network-manager-l2tp
 ##Install vim vundle plugins, This may need quite a long time to finish
