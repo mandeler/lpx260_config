@@ -63,9 +63,9 @@ set vpn l2tp remote-access client-ip-pool stop 192.168.255.255
  set vpn l2tp remote-access dns-servers server-1 8.8.8.8
  set vpn l2tp remote-access dns-servers server-2 8.8.4.4
 set vpn l2tp remote-access ipsec-settings authentication mode pre-shared-secret
-set vpn l2tp remote-access ipsec-settings authentication pre-shared-secret Mandeler123
+set vpn l2tp remote-access ipsec-settings authentication pre-shared-secret 123456
 set vpn l2tp remote-access authentication mode local
-set vpn l2tp remote-access authentication local-users username chan password Mandeler123
+set vpn l2tp remote-access authentication local-users username username password 123456
 
 set firewall name OUTSIDE-LOCAL rule 40 action 'accept'
 set firewall name OUTSIDE-LOCAL rule 40 protocol 'esp'
@@ -90,7 +90,7 @@ set nat source rule 110 translation address masquerade
 
 
 
-chan@vyos:~$ show configuration 
+@vyos:~$ show configuration 
 firewall {
     name INSIDE_OUT {
         default-action accept
@@ -211,7 +211,7 @@ system {
         }
     }
     login {
-        user chan {
+        user  {
             authentication {
                 encrypted-password ****************
                 plaintext-password ****************
