@@ -1,8 +1,8 @@
-chan@vyos:~$ show configuration cmman
+@vyos:~$ show configuration cmman
 
   Invalid command: show configuration [cmman]
       
-chan@vyos:~$ show configuration commands  
+@vyos:~$ show configuration commands  
 set firewall name OUTSIDE-IN default-action 'drop'
 set firewall name OUTSIDE-IN rule 10 action 'accept'
 set firewall name OUTSIDE-IN rule 10 state established 'enable'
@@ -49,8 +49,8 @@ set nat source rule 110 translation address 'masquerade'
 set service ssh port '5903'
 set system config-management commit-revisions '20'
 set system console device ttyS0 speed '9600'
-set system login user chan authentication encrypted-password '$6$F7ESVbJbniPLdq$6OeuoolWc6TH0zataaN87QfOxOoMj.ONxDg0IjShVe7U22FGEy6E/6zPN/zr3nnR/KUECxaXB7tOHJ3o.Jiro/'
-set system login user chan authentication plaintext-password ''
+set system login user username authentication encrypted-password '$6$F7ESVbJbniPLdq$6OeuoolWc6TH0zataaN87QfOxOoMj.ONxDg0IjShVe7U22FGEy6E/6zPN/zr3nnR/KUECxaXB7tOHJ3o.Jiro/'
+set system login user username authentication plaintext-password ''
 set system login user vyos authentication encrypted-password '$6$eIC3n2oLNNxgoGo$Hbe/ZxU8MzK1unoJhSneJJMqZadNz1nyGtEB.UGdngGJUobUNyIOPKusB7UwH8odCoXPcJ.2HVUNr3rSCD36m1'
 set system login user vyos authentication plaintext-password ''
 set system login user vyos level 'admin'
@@ -65,12 +65,12 @@ set system syslog global facility protocols level 'debug'
 set vpn ipsec ipsec-interfaces interface 'eth0'
 set vpn ipsec nat-networks allowed-network '0.0.0.0/0'
 set vpn ipsec nat-traversal 'enable'
-set vpn l2tp remote-access authentication local-users username chan password 'Mandeler123'
+set vpn l2tp remote-access authentication local-users username username password '123456'
 set vpn l2tp remote-access authentication mode 'local'
 set vpn l2tp remote-access client-ip-pool start '192.168.255.1'
 set vpn l2tp remote-access client-ip-pool stop '192.168.255.255'
 set vpn l2tp remote-access dns-servers server-1 '8.8.8.8'
 set vpn l2tp remote-access dns-servers server-2 '8.8.4.4'
 set vpn l2tp remote-access ipsec-settings authentication mode 'pre-shared-secret'
-set vpn l2tp remote-access ipsec-settings authentication pre-shared-secret 'Mandeler123'
+set vpn l2tp remote-access ipsec-settings authentication pre-shared-secret '123456'
 set vpn l2tp remote-access outside-address '45.76.242.129'
