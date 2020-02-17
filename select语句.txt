@@ -1,0 +1,154 @@
+
+ select 0 isselect,
+              pd.client_id 客户ID,
+              c.oldclient_id 原系统编码,
+              c.name 客户名称,count(*)  订单行数,
+              pd.company_id 分公司编码,pd.priority 订单级别值,pd.order_type 订单类型值,
+              (select dictname from eos_dict_entry where dicttypeid='WMS_ORDER_PRIORITY' and dictid=pd.priority) 订单级别,
+              min(sp.send_time) 配送时间 ,
+              pd.owner_id 货主编码,
+              (select dictname from eos_dict_entry where dicttypeid='WMS_ORDER_TYPE' and dictid=pd.order_type) 订单类型,
+              pd.warehouse_id 仓库编码,
+              w.warehouse_name 仓库类型,
+              nvl(sum(ROUND(pd.quantity / cas.quantity)),0) 件数,
+              pd.stockcalgroup_id 物流中心编码,
+              pd.goodssort_id 药品要求, pd.MONOMARK 拼单标识,
+              c.clientdis_id 客户编码,
+              c.area_code 行政区域,
+              nvl(pd.add_id, ' ')  送货地址编码,
+              nvl(ca.address, ' ')  送货地址,
+              nvl(ca.Zone_Id,' ') 客户集结路径,
+              min(pd.create_date)  接收时间,
+              ca.owner_name 子客户名称,
+              sp.bill_type 发票类型,
+              sp.haulingtrack 线路值,
+              ca.line_id 客户线路值,
+              /*(SELECT DICTIONARY_DISPLAY FROM WMS_DICTIONARY  WHERE DICTIONARY_ID='TRANSIT_LINE' 
+               AND DICTIONARY_VALUE=sp.haulingtrack AND ORG_ID=pd.org_id AND OWNER_ID=pd.owner_id) 线路,*/
+              (select line_description from lines_inf where line_id=sp.haulingtrack 
+                and org_id=pd.org_id and owner_id=pd.owner_id and nvl(isdeleted,0)=0) 线路,
+              (SELECT DICTIONARY_DISPLAY FROM WMS_DICTIONARY  WHERE DICTIONARY_ID='TRANS_TYPE' 
+               AND DICTIONARY_VALUE=sp.trans_type AND ORG_ID=pd.org_id AND OWNER_ID=pd.owner_id) 送货类型,
+               sp.trans_type 送货类型值,
+               pd.create_orgseq 机构序列,
+              (select nvl(count(*),0) 手工待处理行数 from Pretreatment_Detail pdd
+                where pdd.org_id =pd.org_id
+                and pdd.owner_id =pd.owner_id
+                and pdd.client_id  = pd.client_id
+                and pdd.company_id = pd.company_id
+                and pdd.priority = pd.priority
+                and pdd.order_type = pd.order_type
+                and pdd.warehouse_id = pd.warehouse_id
+                and  nvl(pdd.add_id, ' ') = nvl(pd.add_id, ' ')
+                and pdd.goodssort_id = pd.goodssort_id
+                and pdd.MONOMARK = pd.monomark 
+                and pdd.state in ('0','1','D')) 手工待处理行数
+             from Pretreatment_Detail pd
+             inner join client c on c.client_id = pd.client_id and c.ORG_ID = pd.ORG_ID and c.OWNER_ID = pd.OWNER_ID
+             inner join client_ext on c.client_id = client_ext.client_id and c.ORG_ID = client_ext.ORG_ID
+                        and c.OWNER_ID = client_ext.OWNER_ID
+             inner join saleproof sp on sp.proof_id = pd.proof_id
+             inner join warehouse w on w.warehouse_id = pd.warehouse_id  and w.STOCKCALGROUP_ID = pd.STOCKCALGROUP_ID
+             inner join goods_inf gi on pd.goods_id = gi.goods_id and pd.owner_id = gi.owner_id and pd.org_id = gi.org_id
+             left join client_address ca on ca.client_id = pd.client_id and pd.org_id = ca.org_id 
+                        and pd.owner_id = ca.owner_id and pd.add_id = ca.add_id 
+             left join casing cas on cas.goods_id = pd.goods_id and cas.org_id =pd.org_id --:in_orgid 
+                        and cas.owner_id =pd.owner_id and cas.casing_sort = 1 --:in_ownerid and cas.casing_sort = 1 
+            where pd.state = '3' and pd.order_type not in ('202', '203', '204', '205', '206')
+            and pd.org_id = :in_orgid   and pd.stockcalgroup_id in （'116001','116003','116004','116002')    and pd.owner_id in ('116003','116188','116001','116006','116007','116004','116005','116008','116009','116','116002')   
+            group by pd.client_id,c.oldclient_id,
+                 c.name,
+                 pd.state,
+                 pd.company_id,
+                 pd.priority,
+                 pd.owner_id,
+                 pd.order_type,
+                 pd.warehouse_id,
+                 pd.goodssort_id, pd.MONOMARK,
+                 c.clientdis_id,
+                 c.area_code,
+                 pd.add_id,
+                 ca.address,ca.Zone_Id,
+                 w.warehouse_name,
+			     pd.stockcalgroup_id,
+                 ca.owner_name,
+                 sp.bill_type,
+                 sp.haulingtrack,
+                 ca.line_id,
+                 sp.trans_type,                
+			     pd.create_orgseq,
+                 pd.org_id 
+                  UNION ALL  
+                select 0 isselect,
+                  pd.client_id,
+                  '' oldclient_id,
+                  S.SUPPLIER_NAME name,
+                  count(*) orderNum,
+                  pd.company_id,
+                  pd.priority, pd.order_type,       
+                  (select dictname from eos_dict_entry where dicttypeid = 'WMS_ORDER_PRIORITY' and dictid = pd.priority) priority,
+                  min(sp.send_time) send_time,
+                  pd.owner_id,
+                  (select dictname from eos_dict_entry where dicttypeid = 'WMS_ORDER_TYPE' and dictid = pd.order_type) order_type,
+                  pd.warehouse_id,
+                  w.warehouse_name,
+                  nvl(sum(ROUND(pd.quantity / cas.quantity)),0),
+				  pd.stockcalgroup_id,
+                  pd.goodssort_id, pd.MONOMARK,
+                  S.SUPPLIERDIS_ID clientdis_id,
+                  '' area_code,
+                  nvl(pd.add_id, ' ') add_id,
+                  '' address,
+                  '' zone_Id,
+                  min(pd.create_date) create_date,
+                  '' as owner_name,
+                  sp.bill_type,
+                  sp.haulingtrack,
+                  '' as line_id, 
+                 (select line_description from lines_inf where line_id=sp.haulingtrack 
+                and org_id=pd.org_id and owner_id=pd.owner_id and nvl(isdeleted,0)=0) lineName,
+                 (SELECT DICTIONARY_DISPLAY FROM WMS_DICTIONARY  WHERE DICTIONARY_ID='TRANS_TYPE' 
+                  AND DICTIONARY_VALUE=sp.trans_type AND ORG_ID=pd.org_id AND OWNER_ID=pd.owner_id) trans_type,
+                  sp.trans_type,
+                  pd.create_orgseq,
+                 (select nvl(count(*),0) 手工待处理行数 from Pretreatment_Detail pdd
+                where pdd.org_id =pd.org_id
+                and pdd.owner_id =pd.owner_id
+                and pdd.client_id  = pd.client_id
+                and pdd.company_id = pd.company_id
+                and pdd.priority = pd.priority
+                and pdd.order_type = pd.order_type
+                and pdd.warehouse_id = pd.warehouse_id
+                and  nvl(pdd.add_id, ' ') = nvl(pd.add_id, ' ')
+                and pdd.goodssort_id = pd.goodssort_id
+                and pdd.MONOMARK = pd.monomark 
+                and pdd.state in ('0','1','D')) 手工待处理行数
+                  from Pretreatment_Detail pd
+            inner join supplier_inf s on s.supplier_id = pd.client_id  and s.ORG_ID = pd.ORG_ID  and s.OWNER_ID = pd.OWNER_ID
+            inner join warehouse w on w.warehouse_id = pd.warehouse_id and w.STOCKCALGROUP_ID = pd.STOCKCALGROUP_ID
+            inner join saleproof sp on sp.proof_id = pd.proof_id
+            inner join goods_inf gi on pd.goods_id = gi.goods_id and pd.owner_id = gi.owner_id and pd.org_id = gi.org_id 
+            left join casing cas on cas.goods_id = pd.goods_id and cas.org_id =pd.org_id  ---:in_orgid 
+                        and cas.owner_id =pd.owner_id and cas.casing_sort = 1  --:in_ownerid and cas.casing_sort = 1 
+            where pd.Order_Type IN ('202', '203', '204', '205', '206') and pd.state = '3' 
+                  and pd.org_id = :in_orgid   and pd.stockcalgroup_id in （'116001','116003','116004','116002')    and pd.owner_id in ('116003','116188','116001','116006','116007','116004','116005','116008','116009','116','116002')   
+            group by pd.client_id,
+                 S.SUPPLIER_NAME,
+                 pd.state,
+                 pd.company_id,
+                 pd.priority,
+                 pd.owner_id,
+                 pd.order_type,				 
+                 pd.warehouse_id,
+                 pd.stockcalgroup_id,
+                 pd.goodssort_id, pd.MONOMARK,
+                 S.SUPPLIERDIS_ID,
+                 area_code,
+                 pd.add_id,address,
+                 w.warehouse_name,
+                 sp.bill_type,
+                 sp.haulingtrack,
+                 sp.trans_type,
+                 pd.create_orgseq,
+                 pd.org_id 
+                  order by 订单级别值, 订单类型值, 订单级别, 配送时间, 接收时间, 客户ID, 货主编码, 子客户名称
